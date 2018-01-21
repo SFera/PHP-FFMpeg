@@ -149,11 +149,12 @@ class Audio extends AbstractStreamableMedia
         $commands = array( '-i', $this->pathfile, '-af', 'volumedetect', '-vn', '-sn', '-dn', '-f', 'null' , 'NUL');
 
         try {
-            $output = $this->driver->command($commands, true);
+            $this->driver->command($commands, true);
         } catch (ExecutionFailureException $e) {
             throw new RuntimeException('VolumeDetection failed', $e->getCode(), $e);
         }
 
+        $output = $this->driver->getLastProcess()->getErrorOutput();
         preg_match_all('/\[Parsed_volumedetect.*\] (.*): (.*)\s/U',$output,$matches);
         $volumeData = [];
         foreach ($matches[1] as $i => $key) {
