@@ -139,4 +139,28 @@ class Audio extends AbstractStreamableMedia
     {
         return new Waveform($this, $this->driver, $this->ffprobe, $width, $height, $colors);
     }
+
+    /**
+     * @return array volume detect results
+     */
+    public function volumeDetect() {
+        $volumeData = [];
+
+        $commands = array( '-i', $this->pathfile, '-af', 'volumedetect', '-vn', '-sn', '-dn', '-f', 'null' , 'NUL');
+
+        try {
+            $output = $this->driver->command($commands, true);
+        } catch (ExecutionFailureException $e) {
+            throw new RuntimeException('VolumeDetection failed', $e->getCode(), $e);
+        }
+
+        preg_match_all('/\[Parsed_volumedetect.*\] (.*): (.*)\s/U',$output,$matches);
+        $volumeData = [];
+        foreach ($matches[1] as $i => $key) {
+            $volumeData[$key] = $matches[2][$i];
+        }
+
+        return $volumeData;
+    }
+
 }
